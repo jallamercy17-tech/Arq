@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArcAI — Academic Assistant</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Phosphor Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css" />
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
+      startup: { typeset: false }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <!-- Desmos -->
+  <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6" async></script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="hidden">
+    <div id="sidebar-header">
+      <div class="sidebar-logo">
+        <svg width="64" height="36" viewBox="0 0 64 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 32 A28 28 0 0 1 60 32" stroke="#d97757" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <text x="32" y="34" text-anchor="middle" font-family="'Comfortaa', sans-serif" font-weight="700" font-size="18" fill="#f0ede8" letter-spacing="0.5">arq</text>
+        </svg>
+      </div>
+      <button id="sidebar-close-btn" class="nav-icon-btn">
+        <i class="ph ph-x"></i>
+      </button>
+    </div>
+
+    <div id="sidebar-body">
+
+      <!-- Top actions -->
+      <div class="sidebar-actions">
+        <button class="sidebar-action-btn">
+          <i class="ph ph-pencil-simple-line"></i>
+          New chat
+        </button>
+        <div class="sidebar-separator"></div>
+        <button class="sidebar-action-btn sidebar-premium-btn">
+          <i class="ph ph-crown-simple"></i>
+          Premium
+        </button>
+      </div>
+
+      <!-- Recent chats -->
+      <div class="sidebar-section">
+        <p class="sidebar-section-label">Recent</p>
+        <div class="sidebar-chats">
+          <button class="sidebar-chat-item">Integration by parts explained</button>
+          <button class="sidebar-chat-item">Eigenvalues of a 3×3 matrix</button>
+          <button class="sidebar-chat-item">What is a Taylor series?</button>
+          <button class="sidebar-chat-item">Solving ODEs with substitution</button>
+          <button class="sidebar-chat-item">Limits at infinity</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sidebar overlay -->
+  <div id="sidebar-overlay" class="hidden"></div>
+
+  <!-- Navbar -->
+  <nav id="navbar">
+
+    <!-- Hamburger -->
+    <button class="nav-icon-btn" id="sidebar-open-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256">
+        <path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM128,184H40a8,8,0,0,0,0,16H128a8,8,0,0,0,0-16Z"></path>
+      </svg>
+    </button>
+
+    <!-- Center: Subject picker -->
+    <div class="nav-center">
+      <button class="nav-subject-btn" id="subject-btn" aria-haspopup="true" aria-expanded="false">
+        <span id="subject-label">University Mathematics</span>
+        <i class="ph ph-caret-down nav-chevron"></i>
+      </button>
+    </div>
+
+    <div class="dropdown" id="subject-dropdown" role="menu">
+        <div class="dropdown-header">Choose Subject</div>
+
+        <button class="dropdown-item selected" data-value="mathematics" role="menuitem">
+          <span class="item-icon"><i class="ph ph-math-operations"></i></span>
+          University Mathematics
+          <span class="item-check"><i class="ph ph-check"></i></span>
+        </button>
+
+        <button class="dropdown-item" data-value="physics" role="menuitem">
+          <span class="item-icon"><i class="ph ph-atom"></i></span>
+          Introductory Physics
+          <span class="item-check"><i class="ph ph-check"></i></span>
+        </button>
+
+        <button class="dropdown-item" data-value="english" role="menuitem">
+          <span class="item-icon"><i class="ph ph-text-aa"></i></span>
+          Academic English
+          <span class="item-check"><i class="ph ph-check"></i></span>
+        </button>
+
+        <button class="dropdown-item" data-value="statistics" role="menuitem">
+          <span class="item-icon"><i class="ph ph-chart-bar"></i></span>
+          Basic Statistics
+          <span class="item-check"><i class="ph ph-check"></i></span>
+        </button>
+
+        <button class="dropdown-item" data-value="computing" role="menuitem">
+          <span class="item-icon"><i class="ph ph-terminal-window"></i></span>
+          Introduction to Computing
+          <span class="item-check"><i class="ph ph-check"></i></span>
+        </button>
+      </div>
+
+    <!-- Right: Mode filter -->
+    <div class="nav-right">
+      <button class="nav-icon-btn" id="mode-btn" aria-haspopup="true" aria-expanded="false" title="Select Mode">
+        <i class="ph ph-faders-horizontal"></i>
+      </button>
+    </div>
+
+    <div class="dropdown" id="mode-dropdown" role="menu">
+        <div class="dropdown-header">Learning Mode</div>
+
+        <button class="dropdown-item selected" data-value="concept" role="menuitem">
+          <span class="item-icon"><i class="ph ph-lightbulb"></i></span>
+          Concept Explanation
+          <span class="item-check"><i class="ph ph-check"></i></span>
+        </button>
+
+        <button class="dropdown-item" data-value="assignment" role="menuitem">
+          <span class="item-icon"><i class="ph ph-pencil-simple"></i></span>
+          Assignment Help
+          <span class="item-check"><i class="ph ph-check"></i></span>
+        </button>
+      </div>
+
+  </nav>
+
+  <!-- Chat -->
+  <div id="chat-wrapper">
+    <div id="chat-area">
+
+      <div id="welcome-state">
+        <div class="welcome-title">How can I help you today?</div>
+        <p class="welcome-sub">Pick a subject and mode above, then ask your question.</p>
+      </div>
+
+      <div id="topics-card" class="hidden">
+        <div class="topics-card-header">
+          <span class="topics-card-title">Suggested topics</span>
+          <button class="topics-close-btn" id="topics-close-btn">
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <!-- Topic items — populated by main.js -->
+        <div class="topics-list"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Input -->
+  <div id="input-area">
+
+    <!-- Suggestion pills — populated by main.js (Concept mode only) -->
+    <div id="suggestion-pills"></div>
+
+    <!-- Assignment image preview strip (shown when image is attached) -->
+    <div id="assign-image-strip" class="assign-image-strip hidden">
+      <img id="assign-strip-img" src="" alt="Attached image">
+      <button id="assign-strip-remove" title="Remove image">
+        <i class="ph ph-x"></i>
+      </button>
+    </div>
+
+    <div class="input-shell" id="input-shell">
+      <button id="plus-btn" title="Attach">
+        <i class="ph-bold ph-plus"></i>
+      </button>
+      <textarea
+        id="user-input"
+        placeholder="Ask anything…"
+        rows="1"
+        autocomplete="off"
+        spellcheck="true"
+      ></textarea>
+      <button id="send-btn" class="hidden" title="Send">
+        <i class="ph ph-paper-plane-tilt"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Assignment: hidden file input -->
+  <input type="file" id="assign-gallery-input" accept="image/*" style="display:none">
+
+  <!-- Fullscreen image overlay -->
+  <div id="img-overlay" class="hidden">
+    <button id="img-overlay-close"><i class="ph ph-x"></i></button>
+    <img id="img-overlay-img" src="" alt="">
+  </div>
+
+  <script src="main.js"></script>
+  <script src="glossary-ui.js"></script>
+</body>
+</html>

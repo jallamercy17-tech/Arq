@@ -1,0 +1,87 @@
+{
+  "mathematics": {
+    "pills": ["Integration by parts", "Matrix eigenvalues", "Taylor series", "Limits & continuity", "Differential equations"],
+    "topics": [
+      "Integration by parts",
+      "Matrix eigenvalues & eigenvectors",
+      "Taylor & Maclaurin series",
+      "Limits & continuity",
+      "Ordinary differential equations",
+      "Partial derivatives",
+      "Vector calculus",
+      "Linear transformations",
+      "Fourier series",
+      "Probability distributions",
+      "Complex numbers",
+      "Proof by induction"
+    ]
+  },
+  "physics": {
+    "pills": ["Newton's laws", "Kinematics", "Wave motion", "Thermodynamics", "Electric fields"],
+    "topics": [
+      "Newton's laws of motion",
+      "Kinematics & projectile motion",
+      "Work, energy & power",
+      "Circular motion & gravitation",
+      "Wave motion & superposition",
+      "Thermodynamics & heat transfer",
+      "Electric fields & Coulomb's law",
+      "Magnetic fields & Lorentz force",
+      "Simple harmonic motion",
+      "Optics & refraction",
+      "Special relativity basics",
+      "Quantum mechanics introduction"
+    ]
+  },
+  "english": {
+    "pills": ["Essay structure", "Academic register", "Critical analysis", "Referencing", "Argument mapping"],
+    "topics": [
+      "Essay structure & planning",
+      "Academic register & tone",
+      "Critical reading & analysis",
+      "Argument mapping & reasoning",
+      "Referencing & citation styles",
+      "Paraphrasing & summarising",
+      "Literature reviews",
+      "Research question formulation",
+      "Hedging language",
+      "Cohesion & coherence",
+      "Exam writing under timed conditions",
+      "Editing & proofreading strategies"
+    ]
+  },
+  "statistics": {
+    "pills": ["Hypothesis testing", "Probability basics", "Normal distribution", "Regression", "Confidence intervals"],
+    "topics": [
+      "Descriptive statistics",
+      "Probability basics & rules",
+      "Discrete & continuous distributions",
+      "Normal distribution & z-scores",
+      "Confidence intervals",
+      "Hypothesis testing",
+      "t-tests & ANOVA",
+      "Chi-squared tests",
+      "Linear regression",
+      "Correlation & causation",
+      "Sampling methods",
+      "Bayes' theorem"
+    ]
+  },
+  "computing": {
+    "pills": ["Variables & types", "Loops & iteration", "Functions", "Arrays & lists", "Algorithms"],
+    "topics": [
+      "Variables & data types",
+      "Conditionals & control flow",
+      "Loops & iteration",
+      "Functions & scope",
+      "Arrays & lists",
+      "Recursion",
+      "Sorting & searching algorithms",
+      "Object-oriented programming",
+      "File I/O & exceptions",
+      "Big-O complexity",
+      "Basic data structures",
+      "Introduction to databases"
+    ]
+  }
+}

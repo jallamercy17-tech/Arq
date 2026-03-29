@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArcAI — AI Tutor for First-Year University Students</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #262624;
+      --surface:   #30302e;
+      --brand:     #d97757;
+      --brand-hover: #e8896b;
+      --text-1:    #f0ede8;
+      --text-2:    rgba(240, 237, 232, 0.55);
+      --text-muted:rgba(240, 237, 232, 0.38);
+      --border:    rgba(255,255,255,0.07);
+      --border-2:  rgba(255,255,255,0.12);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Geist', sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle radial glow behind content */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(217, 119, 87, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      max-width: 680px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    /* Logo mark */
+    .hero-logo {
+      padding: 12px 18px;
+      border-radius: 14px;
+      background: var(--brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 32px;
+
+    }
+
+    /* Heading */
+    .hero-heading {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      font-weight: 400;
+      line-height: 1.18;
+      color: var(--text-1);
+      letter-spacing: -0.01em;
+      margin-bottom: 20px;
+    }
+
+    /* Subheading */
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.125rem);
+      font-weight: 400;
+      color: var(--text-2);
+      line-height: 1.7;
+      max-width: 520px;
+      margin-bottom: 16px;
+    }
+
+    /* Trust line */
+    .hero-trust {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 40px;
+    }
+
+    /* CTA Button */
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--brand);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 14px 32px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.15s;
+
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hero-cta:hover {
+      background: var(--brand-hover);
+      transform: translateY(-1px);
+    }
+
+    .hero-cta:active { transform: scale(0.97); }
+
+    .hero-cta svg {
+      width: 18px;
+      height: 18px;
+      fill: #fff;
+    }
+
+    /* Formula decoration */
+    .hero-formula {
+      margin-top: 56px;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .formula-text {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+      color: rgba(240, 237, 232, 0.07);
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    /* Divider */
+    .hero-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-2), transparent);
+      margin: 0;
+    }
+
+    /* Animation */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .hero { padding: 48px 20px 64px; }
+      .hero-heading { font-size: 1.85rem; }
+      .hero-subjects { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="hero-inner">
+
+      <!-- Logo mark -->
+      <div class="hero-logo">
+        <svg width="64" height="36" viewBox="0 0 64 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 32 A28 28 0 0 1 60 32" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <text x="32" y="34" text-anchor="middle" font-family="'Comfortaa', sans-serif" font-weight="700" font-size="18" fill="#fff" letter-spacing="0.5">arq</text>
+        </svg>
+      </div>
+
+      <!-- Heading -->
+      <h1 class="hero-heading">
+        ArcAI — AI Tutor for<br>First-Year University Students
+      </h1>
+
+      <!-- Subheading -->
+      <p class="hero-sub">
+        Understand difficult concepts in maths, physics, statistics, computing, and academic writing — explained step by step, the way a lecturer would.
+      </p>
+
+      <!-- Trust line -->
+      <p class="hero-trust">Built for concept explanation and assignment help</p>
+
+      <!-- CTA -->
+      <a href="/app" class="hero-cta">
+        Start Learning
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+
+      <!-- Formula background decoration -->
+      <div class="hero-formula" aria-hidden="true">
+        <span class="formula-text">x = &minus;b &plusmn; &radic;(b&sup2; &minus; 4ac) &frasl; 2a</span>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="hero-divider"></div>
+
+</body>
+</html>
