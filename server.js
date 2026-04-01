@@ -417,6 +417,9 @@ app.post("/chat-image", async (req, res) => {
   }
 });
 
+// ── Health check (UptimeRobot keep-alive ping) ──
+app.get("/health", (req, res) => res.status(200).json({ status: "ok" }));
+
 app.listen(PORT, () => {
   console.log(`ArcAI running at http://localhost:${PORT}`);
 });
