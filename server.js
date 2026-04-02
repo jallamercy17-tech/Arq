@@ -116,9 +116,18 @@ function formatResponse(text) {
   }
 
   const graphStore = []; // { id, latex }
-  const prepped = text.replace(/\[(?:graph|desmos):\s*(.+?)\]/gi, (_, latex) => {
+  const prepped1 = text.replace(/\[(?:graph|desmos):\s*(.+?)\]/gi, (_, latex) => {
     const id = `__GRAPH_${graphStore.length}__`;
     graphStore.push({ id, latex: toDesmosLatex(latex.trim()) });
+    return id;
+  });
+
+  // Stash <table>...</table> blocks before paragraph splitting so their
+  // internal newlines are never split into separate paragraphs or converted to <br>.
+  const tableStore = []; // raw table HTML strings
+  const prepped = prepped1.replace(/<table[\s\S]*?<\/table>/gi, (match) => {
+    const id = `__TABLE_${tableStore.length}__`;
+    tableStore.push(match);
     return id;
   });
 
@@ -126,6 +135,13 @@ function formatResponse(text) {
 
   for (const trimmed of paragraphs) {
     if (!trimmed) continue;
+
+    // Restore stashed table blocks — emit as-is, no markdown or <p> wrapping
+    if (/^__TABLE_\d+__$/.test(trimmed)) {
+      const idx = parseInt(trimmed.match(/\d+/)[0]);
+      blocks.push(tableStore[idx]);
+      continue;
+    }
 
     // Check if this paragraph contains any graph placeholders
     if (graphStore.some(g => trimmed.includes(g.id))) {
@@ -158,14 +174,15 @@ function formatResponse(text) {
           graphCounter++;
           const gid = `graph${graphCounter}`;
           blocks.push(
-            `<div class="desmos-graph" id="${gid}"></div>` +
+            `<div class="desmos-graph" id="${gid}" style="width:100%;height:320px;"></div>` +
             `<script>` +
             `(function(){` +
             `function init(){` +
             `var elt=document.getElementById('${gid}');` +
             `var calc=Desmos.GraphingCalculator(elt,{expressions:false,settingsMenu:false,zoomButtons:false});elt.__desmos=calc;` +
             `calc.setExpression({id:'r',latex:'${part.latex.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}' });` +
-            `setTimeout(function(){calc.resize();},800);` +
+            `setTimeout(function(){calc.resize();},100);` +
+            `setTimeout(function(){calc.resize();},1200);` +
             `}` +
             `if(window.Desmos){init();}else{var t=setInterval(function(){if(window.Desmos){clearInterval(t);init();}},50);}` +
             `})();` +
@@ -294,8 +311,17 @@ function applyMarkdown(h) {
   h = h.replace(/^### (.+)$/gm,     "<h4>$1</h4>");
   h = h.replace(/^## (.+)$/gm,      "<h3>$1</h3>");
   h = h.replace(/^(\d+)\.\s+/gm,   (_, n) => `${toRoman(parseInt(n, 10))}. `);
-  h = h.replace(/\n/g,              "<br>");
+
+  // Stash <table>...</table> blocks before \n→<br> so their structure is preserved
+  const stash = [];
+  h = h.replace(/(<table[\s\S]*?<\/table>)/gi, (match) => {
+    stash.push(match);
+    return `\x00STASH${stash.length - 1}\x00`;
+  });
+  h = h.replace(/\n/g, "<br>");
   h = h.replace(/(<\/h[1-6]>)(<br>)+/g, "$1");
+  // Restore stashed tables
+  h = h.replace(/\x00STASH(\d+)\x00/g, (_, i) => stash[parseInt(i)]);
   return h;
 }
 
