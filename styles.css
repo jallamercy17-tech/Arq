@@ -292,6 +292,8 @@ body {
 
 .nav-icon-btn i { font-size: var(--icon-lg); }
 
+#sidebar-close-btn { color: var(--text-1); }
+
 
 /* ── Dropdowns ── */
 .dropdown {
@@ -340,7 +342,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
+  padding: 14px 14px;
   font-size: var(--font-base);
   color: var(--text-1);
   cursor: pointer;
@@ -402,6 +404,13 @@ body {
   text-align: center;
   gap: 8px;
   animation: fadeUp 0.4s ease;
+}
+
+.welcome-logo {
+  display: block;
+  margin-bottom: 16px;
+  opacity: 0.07;
+  mix-blend-mode: screen;
 }
 
 .welcome-icon-wrap {
@@ -725,7 +734,7 @@ body {
 }
 
 .topics-card-title {
-  font-family: 'Instrument Serif', serif;
+  font-family: inherit;
   font-size: var(--font-lg);
   color: var(--text-1);
 }
@@ -737,7 +746,7 @@ body {
   background: transparent;
   border: none;
   outline: none;
-  color: var(--text-2);
+  color: var(--text-1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -800,29 +809,55 @@ body {
 /* ── Marked terms ─────────────────────────────────────────────────────────── */
 
 term[data-term] {
-  /* Solid brand-colour underline on first view */
   text-decoration: underline;
-  text-decoration-color: var(--brand, #d97757);   /* matches ArcAI brand */
+  text-decoration-color: #3869cd;
   text-decoration-thickness: 1.5px;
   text-underline-offset: 3px;
+  font-weight: 600;
+  color: inherit;
   cursor: pointer;
   border-radius: 2px;
   transition: background-color 0.15s ease;
 }
 
 term[data-term]:hover {
-  background-color: color-mix(in srgb, var(--brand, #d97757) 12%, transparent);
+  background-color: rgba(56, 105, 205, 0.12);
 }
 
-/* Once the bottom sheet is open for this term → dotted underline */
+term[data-term]::after {
+  content: "";
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  margin-left: 0.18em;
+  vertical-align: middle;
+  position: relative;
+  top: -0.06em;
+  background-color: #3869cd;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%22-5%20-10%20110%20135%22%3E%3Cpath%20d%3D%22m50.004%2019.953c-13.812%200-25.051%2011.238-25.051%2025.051%200%207.7852%202.6641%2011.648%206.3555%2016.992%201.1602%201.6836%202.4805%203.5898%203.8398%205.8203%200.40234%200.65625%200.73828%201.3125%201.0078%201.9805v5.7578c0%200.97266%200.55859%201.8164%201.3711%202.2266v3.332c0%201.6875%201.375%203.0625%203.0664%203.0625h0.66406l2.1797%203.4961c0.92969%201.4766%202.4609%202.3242%204.2031%202.3242h4.7305c1.7461%200%203.2773-0.84766%204.2031-2.3281l2.1797-3.4922h0.66406c1.6914%200%203.0664-1.375%203.0664-3.0625v-3.332c0.8125-0.41406%201.3711-1.2578%201.3711-2.2266v-5.8008c0.26562-0.65234%200.59375-1.293%200.99219-1.9414%201.3594-2.2266%202.6758-4.1367%203.8398-5.8203%203.6914-5.3477%206.3555-9.2109%206.3555-16.992%200-6.6328-2.6133-12.902-7.3594-17.66-4.7539-4.7656-11.035-7.3906-17.684-7.3906zm11.598%2051.977v3.625c0%200.13281-0.10937%200.24219-0.24219%200.24219h-22.699c-0.13281%200-0.24219-0.10938-0.24219-0.24219v-3.625zm-6.9375%2014.543c-0.51172%200.81641-1.3242%201.2656-2.2891%201.2656h-4.7305c-0.96094%200-1.7734-0.44922-2.2891-1.2656l-1.4336-2.2969h12.176zm5.5664-5.3594c0%200.44531-0.36328%200.80469-0.80859%200.80469h-18.824c-0.44531%200-0.80859-0.35938-0.80859-0.80469v-3.0586h20.441zm6.6016-20.402c-1.1797%201.707-2.5156%203.6445-3.9062%205.9219-0.61328%201.0039-1.0898%202.0039-1.4453%203.0352h-22.957c-0.35938-1.0352-0.83203-2.0352-1.4453-3.0352-1.3945-2.2812-2.7305-4.2188-3.9062-5.9258-3.5859-5.1953-5.957-8.6289-5.957-15.711%200-12.566%2010.223-22.793%2022.793-22.793%2012.566%200%2022.785%2010.223%2022.785%2022.793%200%207.082-2.3711%2010.516-5.957%2015.711z%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%22-5%20-10%20110%20135%22%3E%3Cpath%20d%3D%22m50.004%2019.953c-13.812%200-25.051%2011.238-25.051%2025.051%200%207.7852%202.6641%2011.648%206.3555%2016.992%201.1602%201.6836%202.4805%203.5898%203.8398%205.8203%200.40234%200.65625%200.73828%201.3125%201.0078%201.9805v5.7578c0%200.97266%200.55859%201.8164%201.3711%202.2266v3.332c0%201.6875%201.375%203.0625%203.0664%203.0625h0.66406l2.1797%203.4961c0.92969%201.4766%202.4609%202.3242%204.2031%202.3242h4.7305c1.7461%200%203.2773-0.84766%204.2031-2.3281l2.1797-3.4922h0.66406c1.6914%200%203.0664-1.375%203.0664-3.0625v-3.332c0.8125-0.41406%201.3711-1.2578%201.3711-2.2266v-5.8008c0.26562-0.65234%200.59375-1.293%200.99219-1.9414%201.3594-2.2266%202.6758-4.1367%203.8398-5.8203%203.6914-5.3477%206.3555-9.2109%206.3555-16.992%200-6.6328-2.6133-12.902-7.3594-17.66-4.7539-4.7656-11.035-7.3906-17.684-7.3906zm11.598%2051.977v3.625c0%200.13281-0.10937%200.24219-0.24219%200.24219h-22.699c-0.13281%200-0.24219-0.10938-0.24219-0.24219v-3.625zm-6.9375%2014.543c-0.51172%200.81641-1.3242%201.2656-2.2891%201.2656h-4.7305c-0.96094%200-1.7734-0.44922-2.2891-1.2656l-1.4336-2.2969h12.176zm5.5664-5.3594c0%200.44531-0.36328%200.80469-0.80859%200.80469h-18.824c-0.44531%200-0.80859-0.35938-0.80859-0.80469v-3.0586h20.441zm6.6016-20.402c-1.1797%201.707-2.5156%203.6445-3.9062%205.9219-0.61328%201.0039-1.0898%202.0039-1.4453%203.0352h-22.957c-0.35938-1.0352-0.83203-2.0352-1.4453-3.0352-1.3945-2.2812-2.7305-4.2188-3.9062-5.9258-3.5859-5.1953-5.957-8.6289-5.957-15.711%200-12.566%2010.223-22.793%2022.793-22.793%2012.566%200%2022.785%2010.223%2022.785%2022.793%200%207.082-2.3711%2010.516-5.957%2015.711z%22%2F%3E%3C%2Fsvg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+}
+
+/* Once the bottom sheet is open for this term */
 term[data-term].term--open {
-  text-decoration-style: dotted;
-  background-color: color-mix(in srgb, var(--brand, #d97757) 16%, transparent);
+  text-decoration-color: #534fa3;
+  text-decoration-style: solid;
+  background-color: rgba(83, 79, 163, 0.14);
 }
 
-/* Once visited, keep dotted underline even after sheet closes */
+term[data-term].term--open::after,
+term[data-term].term--visited::after {
+  background-color: #534fa3;
+}
+
+/* Once visited */
 term[data-term].term--visited {
-  text-decoration-style: dotted;
+  text-decoration-color: #534fa3;
+  text-decoration-style: solid;
 }
 
 /* ── Backdrop ─────────────────────────────────────────────────────────────── */

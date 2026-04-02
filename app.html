@@ -21,6 +21,18 @@
 
   <!-- Desmos -->
   <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6" async></script>
+
+  <!-- PostHog -->
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureFlagEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify alias setPersonProperties groupIdentify setPersonPropertiesForFlags resetGroupPropertiesForFlags setGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init('phc_obkGjgY9ePwJqJTQtNn8fhWyFsMw825aDLchroek9DX6', {
+      api_host: 'https://us.i.posthog.com',
+      person_profiles: 'identified_only',
+      autocapture: false,
+      capture_pageview: true,
+      capture_pageleave: true,
+    });
+  </script>
 </head>
 <body>
 
@@ -28,10 +40,12 @@
   <div id="sidebar" class="hidden">
     <div id="sidebar-header">
       <div class="sidebar-logo">
-        <svg width="64" height="36" viewBox="0 0 64 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 32 A28 28 0 0 1 60 32" stroke="#d97757" stroke-width="3" stroke-linecap="round" fill="none"/>
-          <text x="32" y="34" text-anchor="middle" font-family="'Comfortaa', sans-serif" font-weight="700" font-size="18" fill="#f0ede8" letter-spacing="0.5">arq</text>
-        </svg>
+        <a href="/" aria-label="Go to home">
+          <svg width="64" height="36" viewBox="0 0 64 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 32 A28 28 0 0 1 60 32" stroke="#d97757" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <text x="32" y="34" text-anchor="middle" font-family="'Comfortaa', sans-serif" font-weight="700" font-size="18" fill="#f0ede8" letter-spacing="0.5">arq</text>
+          </svg>
+        </a>
       </div>
       <button id="sidebar-close-btn" class="nav-icon-btn">
         <i class="ph ph-x"></i>
@@ -153,8 +167,12 @@
     <div id="chat-area">
 
       <div id="welcome-state">
+        <svg width="140" height="79" viewBox="0 0 64 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="welcome-logo">
+          <path d="M4 32 A28 28 0 0 1 60 32" stroke="var(--text-1)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <text x="32" y="34" text-anchor="middle" font-family="'Comfortaa', sans-serif" font-weight="700" font-size="18" fill="var(--text-1)" letter-spacing="0.5">arq</text>
+        </svg>
         <div class="welcome-title">How can I help you today?</div>
-        <p class="welcome-sub">Pick a subject and mode above, then ask your question.</p>
+
       </div>
 
       <div id="topics-card" class="hidden">

@@ -3,23 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ArcAI — AI Tutor for First-Year University Students</title>
+  <title>arq — AI Tutor for First-Year University Students</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Instrument+Serif:ital,wght@0,400;0,900;1,400;1,900&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- KaTeX for formula rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+
+  <!-- PostHog -->
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureFlagEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify alias setPersonProperties groupIdentify setPersonPropertiesForFlags resetGroupPropertiesForFlags setGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init('phc_obkGjgY9ePwJqJTQtNn8fhWyFsMw825aDLchroek9DX6', {
+      api_host: 'https://us.i.posthog.com',
+      person_profiles: 'identified_only',
+      autocapture: false,
+      capture_pageview: true,
+      capture_pageleave: true,
+    });
+  </script>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #262624;
-      --surface:   #30302e;
-      --brand:     #d97757;
+      --bg:          #262624;
+      --surface:     #30302e;
+      --brand:       #d97757;
       --brand-hover: #e8896b;
-      --text-1:    #f0ede8;
-      --text-2:    rgba(240, 237, 232, 0.55);
-      --text-muted:rgba(240, 237, 232, 0.38);
-      --border:    rgba(255,255,255,0.07);
-      --border-2:  rgba(255,255,255,0.12);
+      --text-1:      #f0ede8;
+      --text-2:      rgba(240, 237, 232, 0.55);
+      --text-muted:  rgba(240, 237, 232, 0.38);
+      --border:      rgba(255,255,255,0.07);
+      --border-2:    rgba(255,255,255,0.12);
     }
 
     html { scroll-behavior: smooth; }
@@ -30,6 +47,35 @@
       color: var(--text-1);
       min-height: 100dvh;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── Formula canvas layer ── */
+    #formula-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .f-node {
+      position: absolute;
+      color: var(--text-1);
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      white-space: nowrap;
+    }
+
+    .f-node.visible {
+      opacity: 1;
+    }
+
+    /* KaTeX inside formula nodes */
+    .f-node .katex {
+      font-size: inherit;
+      color: inherit;
     }
 
     /* ── Hero ── */
@@ -42,25 +88,11 @@
       text-align: center;
       padding: 60px 24px 80px;
       position: relative;
-      overflow: hidden;
-    }
-
-    /* Subtle radial glow behind content */
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -60%);
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(ellipse, rgba(217, 119, 87, 0.08) 0%, transparent 70%);
-      pointer-events: none;
+      z-index: 1;
     }
 
     .hero-inner {
-      position: relative;
-      max-width: 680px;
+      max-width: 640px;
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -69,28 +101,23 @@
       animation: fadeUp 0.7s ease both;
     }
 
-    /* Logo mark */
-    .hero-logo {
-      padding: 12px 18px;
-      border-radius: 14px;
-      background: var(--brand);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 32px;
-
-    }
-
     /* Heading */
     .hero-heading {
       font-family: 'Instrument Serif', serif;
-      font-size: clamp(2rem, 6vw, 3.2rem);
-      font-weight: 400;
-      line-height: 1.18;
+      font-size: clamp(2.8rem, 8vw, 4.4rem);
+      font-weight: 900;
+      line-height: 1.15;
       color: var(--text-1);
-      letter-spacing: -0.01em;
+      letter-spacing: -0.02em;
       margin-bottom: 20px;
     }
+
+    .hero-heading .highlight {
+      font-style: italic;
+      color: var(--brand);
+    }
+
+
 
     /* Subheading */
     .hero-sub {
@@ -98,7 +125,7 @@
       font-weight: 400;
       color: var(--text-2);
       line-height: 1.7;
-      max-width: 520px;
+      max-width: 500px;
       margin-bottom: 16px;
     }
 
@@ -106,10 +133,10 @@
     .hero-trust {
       font-size: 0.8125rem;
       color: var(--text-muted);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       font-weight: 500;
-      margin-bottom: 40px;
+      margin-bottom: 44px;
     }
 
     /* CTA Button */
@@ -119,17 +146,17 @@
       gap: 8px;
       background: var(--brand);
       color: #fff;
+      border: none;
       font-family: 'Geist', sans-serif;
       font-size: 1rem;
       font-weight: 500;
-      padding: 14px 32px;
+      padding: 14px 34px;
       border-radius: 999px;
-      border: none;
       cursor: pointer;
       text-decoration: none;
-      transition: background 0.15s, transform 0.15s;
-
+      transition: border-color 0.15s, transform 0.15s;
       -webkit-tap-highlight-color: transparent;
+      letter-spacing: -0.01em;
     }
 
     .hero-cta:hover {
@@ -140,25 +167,13 @@
     .hero-cta:active { transform: scale(0.97); }
 
     .hero-cta svg {
-      width: 18px;
-      height: 18px;
-      fill: #fff;
-    }
-
-    /* Formula decoration */
-    .hero-formula {
-      margin-top: 56px;
-      user-select: none;
-      pointer-events: none;
-    }
-
-    .formula-text {
-      font-family: 'Instrument Serif', serif;
-      font-style: italic;
-      font-size: clamp(1.6rem, 4.5vw, 2.4rem);
-      color: rgba(240, 237, 232, 0.07);
-      letter-spacing: 0.05em;
-      white-space: nowrap;
+      width: 16px;
+      height: 16px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     /* Divider */
@@ -166,39 +181,31 @@
       width: 100%;
       height: 1px;
       background: linear-gradient(90deg, transparent, var(--border-2), transparent);
-      margin: 0;
     }
 
     /* Animation */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(18px); }
       to   { opacity: 1; transform: none; }
     }
 
-    /* Responsive */
     @media (max-width: 480px) {
       .hero { padding: 48px 20px 64px; }
       .hero-heading { font-size: 1.85rem; }
-      .hero-subjects { gap: 6px; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Scattered formula background -->
+  <div id="formula-layer" aria-hidden="true"></div>
+
   <section class="hero">
     <div class="hero-inner">
 
-      <!-- Logo mark -->
-      <div class="hero-logo">
-        <svg width="64" height="36" viewBox="0 0 64 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 32 A28 28 0 0 1 60 32" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>
-          <text x="32" y="34" text-anchor="middle" font-family="'Comfortaa', sans-serif" font-weight="700" font-size="18" fill="#fff" letter-spacing="0.5">arq</text>
-        </svg>
-      </div>
-
       <!-- Heading -->
       <h1 class="hero-heading">
-        ArcAI — AI Tutor for<br>First-Year University Students
+        Your AI tutor for<br><span class="highlight">first-year students</span>
       </h1>
 
       <!-- Subheading -->
@@ -207,25 +214,128 @@
       </p>
 
       <!-- Trust line -->
-      <p class="hero-trust">Built for concept explanation and assignment help</p>
+      <p class="hero-trust">Concept explanation &amp; assignment help</p>
 
       <!-- CTA -->
-      <a href="/app" class="hero-cta">
+      <a href="/app" class="hero-cta" id="cta-start">
         Start Learning
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
       </a>
 
-      <!-- Formula background decoration -->
-      <div class="hero-formula" aria-hidden="true">
-        <span class="formula-text">x = &minus;b &plusmn; &radic;(b&sup2; &minus; 4ac) &frasl; 2a</span>
-      </div>
-
     </div>
   </section>
 
   <div class="hero-divider"></div>
+
+  <script>
+    // Track CTA click
+    document.getElementById('cta-start').addEventListener('click', () => {
+      posthog.capture('cta_clicked', { cta: 'start_learning', page: 'landing' });
+    });
+  </script>
+
+  <script>
+    // Wait for KaTeX to load, then scatter formulas
+    window.addEventListener('load', () => {
+      if (typeof katex === 'undefined') return;
+
+      const formulas = [
+        // Algebra & Calculus
+        { tex: 'x = \\dfrac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}',         size: 1.05 },
+        { tex: '\\dfrac{d}{dx}\\left[f(g(x))\\right] = f\'(g(x))\\,g\'(x)', size: 0.88 },
+        { tex: '\\int_a^b f(x)\\,dx = F(b) - F(a)',                   size: 0.92 },
+        { tex: 'e^{i\\pi} + 1 = 0',                                   size: 1.7  },
+        { tex: '\\sum_{n=0}^{\\infty} \\frac{x^n}{n!} = e^x',        size: 1.4  },
+        { tex: '\\nabla^2 \\phi = 0',                                 size: 1.6  },
+        { tex: '\\frac{\\partial f}{\\partial x} = \\lim_{h \\to 0}\\frac{f(x+h)-f(x)}{h}', size: 1.2 },
+        { tex: '\\det(A) = \\sum_{j=1}^n a_{ij}\\,C_{ij}',           size: 1.3  },
+        { tex: 'A\\mathbf{x} = \\lambda\\mathbf{x}',                  size: 1.55 },
+        { tex: '\\int_0^\\infty e^{-x^2}dx = \\dfrac{\\sqrt{\\pi}}{2}', size: 1.4 },
+        { tex: 'f(x) = \\sum_{n=0}^{\\infty}\\frac{f^{(n)}(a)}{n!}(x-a)^n', size: 1.25 },
+        { tex: '\\nabla \\times \\mathbf{F} = \\left(\\frac{\\partial F_z}{\\partial y} - \\frac{\\partial F_y}{\\partial z}\\right)\\hat{i}', size: 1.1 },
+
+        // Physics
+        { tex: 'E = mc^2',                                            size: 1.9  },
+        { tex: 'F = ma',                                              size: 1.7  },
+        { tex: '\\mathbf{F} = q(\\mathbf{E} + \\mathbf{v} \\times \\mathbf{B})', size: 1.35 },
+        { tex: '\\hbar\\,\\frac{\\partial \\Psi}{\\partial t} = \\hat{H}\\Psi', size: 1.3 },
+        { tex: '\\Delta x \\, \\Delta p \\geq \\dfrac{\\hbar}{2}',    size: 1.45 },
+        { tex: 'S = k_B \\ln \\Omega',                                size: 1.55 },
+        { tex: 'PV = nRT',                                            size: 1.6  },
+        { tex: '\\oint \\mathbf{E} \\cdot d\\mathbf{A} = \\dfrac{Q}{\\varepsilon_0}', size: 1.3 },
+        { tex: 'c = \\lambda f',                                      size: 1.55 },
+        { tex: 'T = 2\\pi\\sqrt{\\dfrac{L}{g}}',                      size: 1.45 },
+        { tex: 'F = \\frac{Gm_1 m_2}{r^2}',                          size: 1.4  },
+
+        // Statistics
+        { tex: 'P(A|B) = \\dfrac{P(B|A)\\,P(A)}{P(B)}',              size: 1.35 },
+        { tex: '\\bar{x} = \\dfrac{1}{n}\\sum_{i=1}^n x_i',          size: 1.4  },
+        { tex: '\\sigma^2 = \\frac{1}{N}\\sum_{i=1}^N (x_i - \\mu)^2', size: 1.25 },
+      ];
+
+      const layer = document.getElementById('formula-layer');
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+
+      // Grid-based scatter — reduced to 3x4 = 12 formulas
+      const cols = 3;
+      const rows = 4;
+      const cellW = W / cols;
+      const cellH = H / rows;
+
+      // Shuffle formulas
+      const shuffled = [...formulas].sort(() => Math.random() - 0.5);
+      const used = shuffled.slice(0, cols * rows);
+
+      used.forEach((item, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+
+        // Random position within cell, with padding
+        const pad = 40;
+        const x = col * cellW + pad + Math.random() * (cellW - pad * 2);
+        const y = row * cellH + pad + Math.random() * (cellH - pad * 2);
+
+        // Random slight rotation
+        const rot = (Math.random() - 0.5) * 14;
+
+        // Opacity tier — formulas near center are slightly more faded
+        const cx = Math.abs(x - W / 2) / (W / 2);
+        const cy = Math.abs(y - H / 2) / (H / 2);
+        const distFromCenter = Math.sqrt(cx * cx + cy * cy);
+        const opacity = 0.028 + distFromCenter * 0.038;
+
+        const node = document.createElement('div');
+        node.className = 'f-node';
+        node.style.cssText = `
+          left: ${x}px;
+          top: ${y}px;
+          font-size: ${item.size}rem;
+          opacity: 0;
+          transform: translate(-50%, -50%) rotate(${rot}deg);
+        `;
+
+        try {
+          katex.render(item.tex, node, { throwOnError: false, displayMode: false });
+        } catch(e) {
+          node.textContent = item.tex;
+        }
+
+        // Override KaTeX color
+        node.style.color = `rgba(240, 237, 232, 1)`;
+
+        layer.appendChild(node);
+
+        // Staggered fade-in
+        setTimeout(() => {
+          node.style.transition = 'opacity 1.6s ease';
+          node.style.opacity = String(opacity);
+        }, 200 + i * 60);
+      });
+    });
+  </script>
 
 </body>
 </html>

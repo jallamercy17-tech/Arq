@@ -31,7 +31,6 @@ app.use(express.json({ limit: "10mb" }));
 
 // ── DEBUG: browser console → Termux terminal ──
 app.post("/log", (req, res) => {
-  console.log("[BROWSER]", req.body.msg);
   res.sendStatus(204);
 });
 
@@ -62,7 +61,6 @@ const modePromptMap = {
 Object.keys(subjectPromptMap).forEach(slug => {
   try {
     loadGlossary(slug);
-    console.log(`Glossary loaded: ${slug}`);
   } catch (e) {
     console.warn(`Glossary not found for subject "${slug}":`, e.message);
   }
@@ -99,10 +97,28 @@ function formatResponse(text) {
   // ── Pre-process: extract ALL [graph:] / [desmos:] tags before anything else ──
   // Replace each tag with a unique placeholder so paragraph splitting and
   // markdown transforms cannot interfere with them.
+  function toDesmosLatex(latex) {
+    return latex
+      .replace(/\bsin\b/g,   "\\sin")
+      .replace(/\bcos\b/g,   "\\cos")
+      .replace(/\btan\b/g,   "\\tan")
+      .replace(/\bsec\b/g,   "\\sec")
+      .replace(/\bcsc\b/g,   "\\csc")
+      .replace(/\bcot\b/g,   "\\cot")
+      .replace(/\barcsin\b/g,"\\arcsin")
+      .replace(/\barccos\b/g,"\\arccos")
+      .replace(/\barctan\b/g,"\\arctan")
+      .replace(/\bln\b/g,    "\\ln")
+      .replace(/\blog\b/g,   "\\log")
+      .replace(/\bexp\b/g,   "\\exp")
+      .replace(/\bsqrt\b/g,  "\\sqrt")
+      .replace(/\*/g,         " \\cdot ");
+  }
+
   const graphStore = []; // { id, latex }
   const prepped = text.replace(/\[(?:graph|desmos):\s*(.+?)\]/gi, (_, latex) => {
     const id = `__GRAPH_${graphStore.length}__`;
-    graphStore.push({ id, latex: latex.trim() });
+    graphStore.push({ id, latex: toDesmosLatex(latex.trim()) });
     return id;
   });
 
@@ -321,12 +337,10 @@ app.post("/chat", async (req, res) => {
 
     const data    = await response.json();
     const rawText = data.choices[0].message.content;
-    console.log("\n[RAW AI RESPONSE]\n" + rawText + "\n[END RAW AI RESPONSE]\n");
     const normText = rawText.replace(/(?<!\$)\$(?!\$)((?:[^$]|\\\$)+?)\$(?!\$)/g, (_, inner) => `\\(${inner}\\)`);
 
     // 1. Format Groq plain text → HTML (MathJax, Desmos, markdown-lite)
     const formatted = formatResponse(normText);
-    console.log("\n[FORMATTED OUTPUT]\n" + formatted + "\n[END FORMATTED OUTPUT]\n");
 
     // 2. Deterministically mark glossary terms in the HTML.
     //    markTerms() is a pure function — no Groq involvement.
@@ -399,7 +413,6 @@ app.post("/chat-image", async (req, res) => {
     }
 
     const rawText  = data.choices[0].message.content;
-    console.log("\n[VISION RAW OUTPUT]\n" + rawText + "\n[END VISION RAW OUTPUT]\n");
 
     // Normalise single $...$ inline math → \(...\) before formatting
     // Must run before formatResponse so the renderer handles it correctly.
@@ -421,5 +434,4 @@ app.post("/chat-image", async (req, res) => {
 app.get("/health", (req, res) => res.status(200).json({ status: "ok" }));
 
 app.listen(PORT, () => {
-  console.log(`ArcAI running at http://localhost:${PORT}`);
 });

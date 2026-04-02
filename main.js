@@ -175,6 +175,7 @@ subjectDropdown.querySelectorAll(".dropdown-item").forEach((item) => {
     item.classList.add("selected");
     currentSubject = item.dataset.value;
     sessionStorage.setItem("arcai_subject", currentSubject);
+    posthog.capture('subject_selected', { subject: currentSubject });
     // Extract text by cloning and stripping child elements (icon + check spans)
     const clone = item.cloneNode(true);
     clone.querySelectorAll("span").forEach(s => s.remove());
@@ -200,6 +201,7 @@ modeDropdown.querySelectorAll(".dropdown-item").forEach((item) => {
     currentMode = item.dataset.value;
     history = [];
     closeDropdown(modeBtn, modeDropdown);
+    posthog.capture('mode_selected', { mode: currentMode });
     onModeChange();
   });
 });
@@ -359,6 +361,7 @@ async function handleAssignImage(file) {
   URL.revokeObjectURL(objectUrl);
   assignMimeType = file.type || "image/jpeg";
   sendBtn.classList.remove("hidden");
+  posthog.capture('assignment_image_uploaded', { subject: currentSubject });
 }
 
 assignGalleryInput.addEventListener("change", () => handleAssignImage(assignGalleryInput.files[0]));
@@ -403,6 +406,14 @@ async function sendMessage() {
   const hasImage  = Boolean(assignImageBase64);
   const imageB64  = assignImageBase64;
   const imageMime = assignMimeType;
+
+  // ── PostHog: message sent ──
+  posthog.capture('message_sent', {
+    mode:       currentMode,
+    subject:    currentSubject,
+    has_image:  hasImage,
+    char_count: caption.length,
+  });
 
   const previewUrl = hasImage ? assignStripImg.src : null;
   appendMessage("user", caption, false, previewUrl);
@@ -452,9 +463,23 @@ async function sendMessage() {
     appendMessage("ai", aiContent, isHtml);
     history.push({ role: "assistant", content: data.reply || data.content });
 
+    // ── PostHog: response received ──
+    posthog.capture('ai_response_received', {
+      mode:    currentMode,
+      subject: currentSubject,
+      has_image: hasImage,
+    });
+
   } catch (err) {
     typingEl.remove();
     appendMessage("ai", "⚠️ " + (err.message || "Something went wrong. Please try again."));
+
+    // ── PostHog: response error ──
+    posthog.capture('ai_response_error', {
+      mode:    currentMode,
+      subject: currentSubject,
+      error:   err.message || 'unknown',
+    });
   } finally {
     setLoading(false);
   }

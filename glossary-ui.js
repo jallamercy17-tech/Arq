@@ -85,35 +85,17 @@ function asMath(str) {
   return "\\(" + toLatex(str) + "\\)";
 }
 
-// For example sentences — find the math expression part and wrap only that,
-// leaving surrounding prose as plain text.
-// Pattern: text before ":" or up to the math expression, then the expression, then remaining prose.
+// For example sentences — pass through as-is so MathJax can render any
+// LaTeX delimiters the server includes. Only escape HTML-special chars that
+// are NOT part of LaTeX syntax (backslashes and braces must be preserved).
 function asMathSentence(str) {
-  if (!str) return escapeHtml(str);
-  // Split on the first colon — label before, expression after
-  const colonIdx = str.indexOf(":");
-  if (colonIdx !== -1) {
-    const before = str.slice(0, colonIdx + 1); // e.g. "f(x) = x²"  no — re-check
-    // Actually examples look like: "f(x) = x² is a function."
-    // No colon — split on first run of plain words after the math expression
-  }
-  // Strategy: find the boundary between the math expression and the prose tail.
-  // Math expression ends when we hit " is ", " are ", " has ", " can ", " means ", " where "
-  // or similar natural language connectors.
-  const mathChars = /[\u00B2\u00B3\u2074-\u2079\u2070\u00B9\u207F\u2080-\u2089\u03B1-\u03C9\u0391-\u03A9\u222B\u221A\u2211\u221E\u2202\u2264\u2265\u2260\u2248\u00D7]/;
-  const proseBoundary = /\s+(is|are|has|can|means|where|when|which|as|so)\s/i;
-  const match = str.match(proseBoundary);
-  if (match) {
-    const mathPart  = str.slice(0, match.index).trim();
-    const prosePart = str.slice(match.index).trim();
-    const looksLikeMath = mathChars.test(mathPart) || /[a-zA-Z]\([^)]*\)/.test(mathPart) || /=/.test(mathPart);
-    if (looksLikeMath) {
-      return "\\(" + toLatex(mathPart) + "\\)" + " " + escapeHtml(prosePart);
-    }
-  }
-  return escapeHtml(str);
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
-
 function showContent(entry) {
   let html = `<p class="gloss-sheet-def">${escapeHtml(entry.definition)}</p>`;
 
