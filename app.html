@@ -158,6 +158,12 @@
           Assignment Help
           <span class="item-check"><i class="ph ph-check"></i></span>
         </button>
+
+        <button class="dropdown-item" data-value="exam" role="menuitem" id="exam-mode-item">
+          <span class="item-icon"><i class="ph ph-exam"></i></span>
+          Exam Simulation
+          <span class="item-check"><i class="ph ph-check"></i></span>
+        </button>
       </div>
 
   </nav>
@@ -232,5 +238,13 @@
 
   <script src="main.js"></script>
   <script src="glossary-ui.js"></script>
+
+  <script>
+    // Exam Simulation mode — navigate to dedicated page
+    document.getElementById("exam-mode-item").addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.location.href = "/exam";
+    });
+  </script>
 </body>
 </html>

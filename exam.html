@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArcAI — Exam Simulation</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="exam.css" />
+  <!-- Phosphor Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css" />
+
+  <!-- MathJax — same config as app.html -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
+      startup: { typeset: false }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+</head>
+<body class="exam-body">
+
+  <!-- Navbar -->
+  <nav id="navbar">
+    <span id="nav-exam-title" class="nav-exam-title"></span>
+    <div id="exam-timer" class="exam-timer hidden">
+      <i class="ph ph-timer"></i>
+      <span id="timer-display">20:00</span>
+    </div>
+  </nav>
+
+  <!-- ── SCREEN: Setup ── -->
+  <div id="screen-setup" class="exam-screen active">
+    <div class="exam-setup-card">
+
+      <h1 class="setup-title">Start Your Exam</h1>
+      <p class="setup-sub">AI will generate 10 exam-style questions based on your selections.</p>
+
+      <!-- Subject -->
+      <div class="setup-field">
+        <label class="setup-label">Subject</label>
+        <div class="custom-select-wrap" id="subject-wrap">
+          <button class="custom-select-trigger" id="subject-trigger" type="button" aria-haspopup="listbox">
+            <span id="subject-display">University Mathematics</span>
+            <i class="ph ph-caret-down custom-select-caret"></i>
+          </button>
+          <div class="custom-select-dropdown" id="subject-dropdown" role="listbox">
+            <div class="custom-select-option selected" data-value="mathematics">University Mathematics</div>
+            <div class="custom-select-option" data-value="physics">Introductory Physics</div>
+            <div class="custom-select-option" data-value="statistics">Basic Statistics</div>
+            <div class="custom-select-option" data-value="english">Academic Writing</div>
+          </div>
+          <!-- Hidden native select for JS compatibility -->
+          <select id="setup-subject" style="display:none">
+            <option value="mathematics">University Mathematics</option>
+            <option value="physics">Introductory Physics</option>
+            <option value="statistics">Basic Statistics</option>
+            <option value="english">Academic Writing</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Topic -->
+      <div class="setup-field">
+        <label class="setup-label">Topic</label>
+        <div class="custom-select-wrap" id="topic-wrap">
+          <button class="custom-select-trigger" id="topic-trigger" type="button" aria-haspopup="listbox">
+            <span id="topic-display">Limits &amp; Continuity</span>
+            <i class="ph ph-caret-down custom-select-caret"></i>
+          </button>
+          <div class="custom-select-dropdown" id="topic-dropdown" role="listbox">
+            <!-- populated by exam.js -->
+          </div>
+          <!-- Hidden native select for JS compatibility -->
+          <select id="setup-topic" style="display:none"></select>
+        </div>
+      </div>
+
+      <!-- Difficulty -->
+      <div class="setup-field">
+        <label class="setup-label">Difficulty</label>
+        <div class="difficulty-pills">
+          <button class="diff-pill selected" data-value="easy">Easy</button>
+          <button class="diff-pill" data-value="medium">Medium</button>
+          <button class="diff-pill" data-value="hard">Hard</button>
+        </div>
+      </div>
+
+      <button id="start-exam-btn" class="exam-primary-btn">
+        Generate Exam
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ── SCREEN: Generating ── -->
+  <div id="screen-generating" class="exam-screen">
+    <div class="generating-wrap">
+      <div class="generating-row">
+        <div class="generating-spinner"></div>
+        <p class="generating-text">Generating questions…</p>
+      </div>
+      <p class="generating-sub">This takes about 10–15 seconds.</p>
+    </div>
+  </div>
+
+  <!-- ── SCREEN: Question ── -->
+  <div id="screen-question" class="exam-screen">
+
+    <!-- Progress bar -->
+    <div class="exam-progress-bar-wrap">
+      <div class="exam-progress-bar" id="exam-progress-bar"></div>
+    </div>
+
+    <div class="exam-question-card" id="question-card">
+
+      <!-- Question counter -->
+      <div class="question-meta">
+        <span id="question-counter" class="question-counter">Question 1 of 10</span>
+      </div>
+
+      <!-- Question text -->
+      <div id="question-text" class="question-text"></div>
+
+      <!-- Options -->
+      <div id="options-list" class="options-list"></div>
+
+      <!-- Navigation -->
+      <div class="exam-nav">
+        <button id="prev-btn" class="exam-secondary-btn" disabled>
+          <i class="ph ph-arrow-left"></i>
+          Previous
+        </button>
+        <button id="next-btn" class="exam-primary-btn">
+          Next
+          <i class="ph ph-arrow-right"></i>
+        </button>
+        <button id="submit-btn" class="exam-primary-btn hidden">
+          <i class="ph ph-paper-plane-tilt"></i>
+          Submit Exam
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SCREEN: Results ── -->
+  <div id="screen-results" class="exam-screen">
+    <div class="results-card">
+
+      <div class="results-score-label">Your Score</div>
+
+      <div id="results-icon-wrap" class="results-icon-wrap">
+        <div id="results-score" class="results-score">7/10</div>
+      </div>
+
+      <div class="results-stats">
+        <div class="results-stat correct">
+          <i class="ph ph-check-circle"></i>
+          <span id="stat-correct">7 Correct</span>
+        </div>
+        <div class="results-stat wrong">
+          <i class="ph ph-x-circle"></i>
+          <span id="stat-wrong">3 Wrong</span>
+        </div>
+      </div>
+
+      <div id="results-band" class="results-band"></div>
+
+      <button id="view-corrections-btn" class="exam-primary-btn">
+        View Corrections
+      </button>
+
+      <button id="retake-btn" class="exam-secondary-btn">
+        <i class="ph ph-arrow-counter-clockwise"></i>
+        Retake Exam
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ── SCREEN: Corrections ── -->
+  <div id="screen-corrections" class="exam-screen">
+    <div class="corrections-wrap">
+
+      <div class="corrections-header">
+        <h2 class="corrections-title">Corrections</h2>
+        <p class="corrections-sub">Review each question, your answer, and the correct answer.</p>
+      </div>
+
+      <div id="corrections-list" class="corrections-list"></div>
+
+      <div class="corrections-actions">
+        <button id="new-exam-btn" class="exam-primary-btn">
+          <i class="ph ph-plus"></i>
+          New Exam
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="exam.js"></script>
+</body>
+</html>

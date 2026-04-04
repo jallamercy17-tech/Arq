@@ -355,11 +355,10 @@ plusBtn.addEventListener("click", (e) => {
 
 async function handleAssignImage(file) {
   if (!file) return;
-  const objectUrl = URL.createObjectURL(file);
-  showAssignImage(objectUrl);
-  assignImageBase64 = await readFileAsBase64(file);
-  URL.revokeObjectURL(objectUrl);
   assignMimeType = file.type || "image/jpeg";
+  assignImageBase64 = await readFileAsBase64(file);
+  const dataUrl = `data:${assignMimeType};base64,${assignImageBase64}`;
+  showAssignImage(dataUrl);
   sendBtn.classList.remove("hidden");
   posthog.capture('assignment_image_uploaded', { subject: currentSubject });
 }

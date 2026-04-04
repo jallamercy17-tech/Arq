@@ -37,6 +37,9 @@ app.post("/log", (req, res) => {
 // ── Static routes ──
 app.get("/",            (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/app",         (req, res) => res.sendFile(path.join(__dirname, "app.html")));
+app.get("/exam",        (req, res) => res.sendFile(path.join(__dirname, "exam.html")));
+app.get("/exam.js",     (req, res) => res.sendFile(path.join(__dirname, "exam.js")));
+app.get("/exam.css",    (req, res) => res.sendFile(path.join(__dirname, "exam.css")));
 app.get("/main.js",     (req, res) => res.sendFile(path.join(__dirname, "main.js")));
 app.get("/glossary-ui.js",     (req, res) => res.sendFile(path.join(__dirname, "glossary-ui.js")));
 app.get("/styles.css",  (req, res) => res.sendFile(path.join(__dirname, "styles.css")));
@@ -116,18 +119,9 @@ function formatResponse(text) {
   }
 
   const graphStore = []; // { id, latex }
-  const prepped1 = text.replace(/\[(?:graph|desmos):\s*(.+?)\]/gi, (_, latex) => {
+  const prepped = text.replace(/\[(?:graph|desmos):\s*(.+?)\]/gi, (_, latex) => {
     const id = `__GRAPH_${graphStore.length}__`;
     graphStore.push({ id, latex: toDesmosLatex(latex.trim()) });
-    return id;
-  });
-
-  // Stash <table>...</table> blocks before paragraph splitting so their
-  // internal newlines are never split into separate paragraphs or converted to <br>.
-  const tableStore = []; // raw table HTML strings
-  const prepped = prepped1.replace(/<table[\s\S]*?<\/table>/gi, (match) => {
-    const id = `__TABLE_${tableStore.length}__`;
-    tableStore.push(match);
     return id;
   });
 
@@ -135,13 +129,6 @@ function formatResponse(text) {
 
   for (const trimmed of paragraphs) {
     if (!trimmed) continue;
-
-    // Restore stashed table blocks — emit as-is, no markdown or <p> wrapping
-    if (/^__TABLE_\d+__$/.test(trimmed)) {
-      const idx = parseInt(trimmed.match(/\d+/)[0]);
-      blocks.push(tableStore[idx]);
-      continue;
-    }
 
     // Check if this paragraph contains any graph placeholders
     if (graphStore.some(g => trimmed.includes(g.id))) {
@@ -174,15 +161,15 @@ function formatResponse(text) {
           graphCounter++;
           const gid = `graph${graphCounter}`;
           blocks.push(
-            `<div class="desmos-graph" id="${gid}" style="width:100%;height:320px;"></div>` +
+            `<div class="desmos-graph" id="${gid}"></div>` +
             `<script>` +
             `(function(){` +
             `function init(){` +
             `var elt=document.getElementById('${gid}');` +
-            `var calc=Desmos.GraphingCalculator(elt,{expressions:false,settingsMenu:false,zoomButtons:false});elt.__desmos=calc;` +
+            `var calc=Desmos.GraphingCalculator(elt,{expressions:false,settingsMenu:false,zoomButtons:false,border:false});` +
+            `elt.__desmos=calc;` +
             `calc.setExpression({id:'r',latex:'${part.latex.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}' });` +
-            `setTimeout(function(){calc.resize();},100);` +
-            `setTimeout(function(){calc.resize();},1200);` +
+            `requestAnimationFrame(function(){calc.resize();setTimeout(function(){calc.resize();},300);});` +
             `}` +
             `if(window.Desmos){init();}else{var t=setInterval(function(){if(window.Desmos){clearInterval(t);init();}},50);}` +
             `})();` +
@@ -311,17 +298,8 @@ function applyMarkdown(h) {
   h = h.replace(/^### (.+)$/gm,     "<h4>$1</h4>");
   h = h.replace(/^## (.+)$/gm,      "<h3>$1</h3>");
   h = h.replace(/^(\d+)\.\s+/gm,   (_, n) => `${toRoman(parseInt(n, 10))}. `);
-
-  // Stash <table>...</table> blocks before \n→<br> so their structure is preserved
-  const stash = [];
-  h = h.replace(/(<table[\s\S]*?<\/table>)/gi, (match) => {
-    stash.push(match);
-    return `\x00STASH${stash.length - 1}\x00`;
-  });
-  h = h.replace(/\n/g, "<br>");
+  h = h.replace(/\n/g,              "<br>");
   h = h.replace(/(<\/h[1-6]>)(<br>)+/g, "$1");
-  // Restore stashed tables
-  h = h.replace(/\x00STASH(\d+)\x00/g, (_, i) => stash[parseInt(i)]);
   return h;
 }
 
@@ -363,10 +341,12 @@ app.post("/chat", async (req, res) => {
 
     const data    = await response.json();
     const rawText = data.choices[0].message.content;
+    console.log("\n━━━ RAW AI RESPONSE ━━━\n" + rawText + "\n━━━ END RAW ━━━\n");
     const normText = rawText.replace(/(?<!\$)\$(?!\$)((?:[^$]|\\\$)+?)\$(?!\$)/g, (_, inner) => `\\(${inner}\\)`);
 
     // 1. Format Groq plain text → HTML (MathJax, Desmos, markdown-lite)
     const formatted = formatResponse(normText);
+    console.log("\n━━━ FORMATTED HTML ━━━\n" + formatted + "\n━━━ END HTML ━━━\n");
 
     // 2. Deterministically mark glossary terms in the HTML.
     //    markTerms() is a pure function — no Groq involvement.
@@ -458,6 +438,87 @@ app.post("/chat-image", async (req, res) => {
 
 // ── Health check (UptimeRobot keep-alive ping) ──
 app.get("/health", (req, res) => res.status(200).json({ status: "ok" }));
+
+// ── Exam question generation endpoint ──
+// POST /exam-generate
+// Body: { prompt: string }
+// Returns: { questions: Array<{ question, options, answer, explanation }> }
+app.post("/exam-generate", async (req, res) => {
+  const { prompt } = req.body;
+
+  if (!prompt) {
+    return res.status(400).json({ error: "Missing prompt." });
+  }
+
+  try {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type":  "application/json",
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model:       "llama-3.3-70b-versatile",
+        temperature: 0.7,
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert university exam question generator. Follow the format given exactly.",
+          },
+          { role: "user", content: prompt },
+        ],
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.choices?.[0]?.message?.content) {
+      console.error("Exam generate Groq error:", data);
+      return res.status(502).json({ error: "AI generation failed. Please try again." });
+    }
+
+    const rawText = data.choices[0].message.content;
+    console.log("\n━━━ EXAM RAW ━━━\n" + rawText.slice(0, 400) + "\n━━━ END ━━━\n");
+
+    // Exact same normalisation as app.html line 345
+    const normText = rawText.replace(/(?<!\$)\$(?!\$)((?:[^$]|\\\$)+?)\$(?!\$)/g, (_, inner) => `\\(${inner}\\)`);
+
+    // Parse plain text blocks — no JSON.parse
+    const letterMap = { A: 0, B: 1, C: 2, D: 3 };
+    const blocks = normText.split(/---+/).map(b => b.trim()).filter(Boolean);
+
+    const questions = [];
+    for (const block of blocks) {
+      const aMatch    = block.match(/(?:^|\n)A\)\s*(.+)/);
+      const bMatch    = block.match(/(?:^|\n)B\)\s*(.+)/);
+      const cMatch    = block.match(/(?:^|\n)C\)\s*(.+)/);
+      const dMatch    = block.match(/(?:^|\n)D\)\s*(.+)/);
+      const ansMatch  = block.match(/ANSWER:\s*([ABCD])/);
+      const expMatch  = block.match(/EXPLANATION:\s*([\s\S]+)/);
+
+      if (!aMatch || !bMatch || !cMatch || !dMatch || !ansMatch) continue;
+
+      // Question text is everything before the first option line
+      const question = block.replace(/(?:^|\n)A\)[\s\S]+$/, "").replace(/^QUESTION\s*\n?/, "").trim();
+
+      questions.push({
+        question,
+        options:     [aMatch[1].trim(), bMatch[1].trim(), cMatch[1].trim(), dMatch[1].trim()],
+        answer:      letterMap[ansMatch[1]] ?? 0,
+        explanation: expMatch ? expMatch[1].trim() : "",
+      });
+    }
+
+    if (questions.length < 10) {
+      return res.status(502).json({ error: "Generated fewer than 10 questions. Please try again." });
+    }
+
+    res.json({ questions: questions.slice(0, 10) });
+  } catch (err) {
+    console.error("Exam generate error:", err);
+    res.status(500).json({ error: "Server error generating exam. Please try again." });
+  }
+});
 
 app.listen(PORT, () => {
 });
